@@ -15,7 +15,7 @@ var rootCmd = &cobra.Command{
 	},
 }
 
-// Add child commands and flags
+// Adds child commands and flags
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {

@@ -12,18 +12,21 @@ import (
 
 // Falgs
 var (
-	title string
-	start string
-	end   string
-	desc  string
-	loc   string
-	tz    string
+	title   string
+	start   string
+	end     string
+	desc    string
+	loc     string
+	tz      string
+	calName string
 )
 
 var addCmd = &cobra.Command{
 	Use:   "add",
 	Short: "Add an event to Google Calendar",
 	Run: func(cmd *cobra.Command, args []string) {
+		service := gcal.GetService()
+
 		// Required flags
 		if title == "" || start == "" || end == "" {
 			log.Fatalf("Missing required flags: --title, --start, and --end.")
@@ -39,7 +42,15 @@ var addCmd = &cobra.Command{
 			log.Fatalf("Invalid --end: %v", err)
 		}
 
-		service := gcal.GetService()
+		calID := "primary" // Default calendar
+		if calName != "" {
+			id, err := resolveCalendarID(service, calName)
+			if err != nil {
+				log.Fatalf("Failed to resolve calendar ID: %v", err)
+			}
+
+			calID = id
+		}
 
 		event := &calendar.Event{
 			Summary:     title,
@@ -55,7 +66,7 @@ var addCmd = &cobra.Command{
 			},
 		}
 
-		createdEvent, err := service.Events.Insert("primary", event).Do()
+		createdEvent, err := service.Events.Insert(calID, event).Do()
 		if err != nil {
 			log.Fatalf("Unable to create event: %v", err)
 		}
@@ -64,11 +75,11 @@ var addCmd = &cobra.Command{
 	},
 }
 
+// Parses the datetime in "YYYY-MM-DD HH:MM" format and returns it in RFC3339
 func toRFC3339(datetime, tz string) (string, error) {
 	const layout = "2006-01-02 15:04"
 
-	// Use system time zone by default
-	loc := time.Now().Location()
+	loc := time.Now().Location() // Default to system time zone
 	var err error
 
 	if tz != "" {
@@ -86,6 +97,22 @@ func toRFC3339(datetime, tz string) (string, error) {
 	return t.Format(time.RFC3339), nil
 }
 
+// Finds the calendar ID by its human-readable name
+func resolveCalendarID(service *calendar.Service, name string) (string, error) {
+	cl, err := service.CalendarList.List().Do()
+	if err != nil {
+		return "", fmt.Errorf("unable to list calendars: %w", err)
+	}
+
+	for _, cal := range cl.Items {
+		if cal.Summary == name {
+			return cal.Id, nil
+		}
+	}
+
+	return "", fmt.Errorf("calendar with name %q not found", name)
+}
+
 func init() {
 	// Register flags
 	addCmd.Flags().StringVarP(&title, "title", "t", "", "event title (required)")
@@ -94,6 +121,7 @@ func init() {
 	addCmd.Flags().StringVarP(&desc, "desc", "d", "", "event description")
 	addCmd.Flags().StringVarP(&loc, "loc", "l", "", "event location")
 	addCmd.Flags().StringVarP(&tz, "tz", "z", "", "time zone (IANA name, e.g. Europe/Warsaw), defaults to system time zone")
+	addCmd.Flags().StringVarP(&calName, "cal", "c", "", "name of the calendar to insert the event into, defaults to primary")
 
 	rootCmd.MarkFlagRequired("title")
 	rootCmd.MarkFlagRequired("start")

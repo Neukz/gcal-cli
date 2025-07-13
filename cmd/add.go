@@ -5,12 +5,12 @@ import (
 	"log"
 	"time"
 
-	gcal "github.com/Neukz/gcal-cli/internal/calendar"
+	"github.com/Neukz/gcal-cli/internal/calendar"
 	"github.com/spf13/cobra"
-	"google.golang.org/api/calendar/v3"
+	cal "google.golang.org/api/calendar/v3"
 )
 
-// Falgs
+// Flags
 var (
 	title   string
 	start   string
@@ -25,7 +25,7 @@ var addCmd = &cobra.Command{
 	Use:   "add",
 	Short: "Add an event to Google Calendar",
 	Run: func(cmd *cobra.Command, args []string) {
-		service := gcal.GetService()
+		service := calendar.GetService()
 
 		// Required flags
 		if title == "" || start == "" || end == "" {
@@ -44,7 +44,7 @@ var addCmd = &cobra.Command{
 
 		calID := "primary" // Default calendar
 		if calName != "" {
-			id, err := resolveCalendarID(service, calName)
+			id, err := calendar.ResolveCalendarID(service, calName)
 			if err != nil {
 				log.Fatalf("Failed to resolve calendar ID: %v", err)
 			}
@@ -52,15 +52,15 @@ var addCmd = &cobra.Command{
 			calID = id
 		}
 
-		event := &calendar.Event{
+		event := &cal.Event{
 			Summary:     title,
 			Description: desc,
 			Location:    loc,
-			Start: &calendar.EventDateTime{
+			Start: &cal.EventDateTime{
 				DateTime: startRFC,
 				TimeZone: tz,
 			},
-			End: &calendar.EventDateTime{
+			End: &cal.EventDateTime{
 				DateTime: endRFC,
 				TimeZone: tz,
 			},
@@ -97,24 +97,7 @@ func toRFC3339(datetime, tz string) (string, error) {
 	return t.Format(time.RFC3339), nil
 }
 
-// Finds the calendar ID by its human-readable name
-func resolveCalendarID(service *calendar.Service, name string) (string, error) {
-	cl, err := service.CalendarList.List().Do()
-	if err != nil {
-		return "", fmt.Errorf("unable to list calendars: %w", err)
-	}
-
-	for _, cal := range cl.Items {
-		if cal.Summary == name {
-			return cal.Id, nil
-		}
-	}
-
-	return "", fmt.Errorf("calendar with name %q not found", name)
-}
-
 func init() {
-	// Register flags
 	addCmd.Flags().StringVarP(&title, "title", "t", "", "event title (required)")
 	addCmd.Flags().StringVarP(&start, "start", "s", "", "start time, e.g. 2025-07-12 13:00 (required)")
 	addCmd.Flags().StringVarP(&end, "end", "e", "", "end time, e.g. 2025-07-12 14:00 (required)")

@@ -47,35 +47,22 @@ var listCmd = &cobra.Command{
 			log.Fatalf("Failed to resolve calendar ID: %v", err)
 		}
 
-		// Prepare request
-		req := service.Events.List(calID).
-			ShowDeleted(false).
-			SingleEvents(true).
-			TimeMin(tMin.Format(time.RFC3339)).
-			TimeMax(tMax.Format(time.RFC3339)).
-			OrderBy("startTime")
-
-		// Limit results
-		if maxResults > 0 {
-			req = req.MaxResults(int64(maxResults))
-		}
-
-		events, err := req.Do()
+		events, err := calendar.GetEvents(service, calID, tMin, tMax, maxResults)
 		if err != nil {
 			log.Fatalf("Unable to retrieve events: %v", err)
 		}
 
-		if len(events.Items) == 0 {
+		if len(events) == 0 {
 			fmt.Println("No events found.")
 			return
 		}
 
 		fmt.Println(heading)
-		for _, event := range events.Items {
+		for _, event := range events {
 			printEvent(event)
 		}
 
-		if maxResults > 0 && len(events.Items) == maxResults {
+		if maxResults > 0 && len(events) == maxResults {
 			fmt.Printf("Stopped after first %d entries.\n", maxResults)
 		}
 	},

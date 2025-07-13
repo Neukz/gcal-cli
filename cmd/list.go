@@ -20,6 +20,7 @@ var listCmd = &cobra.Command{
 		tomorrow, _ := cmd.Flags().GetBool("tomorrow")
 		daysAhead, _ := cmd.Flags().GetInt("days")
 		maxResults, _ := cmd.Flags().GetInt("max")
+		calName, _ := cmd.Flags().GetString("cal")
 
 		tNow := time.Now()
 		var tMin, tMax time.Time
@@ -41,8 +42,13 @@ var listCmd = &cobra.Command{
 			heading = "Events for today:"
 		}
 
+		calID, err := calendar.ResolveCalendarID(service, calName)
+		if err != nil {
+			log.Fatalf("Failed to resolve calendar ID: %v", err)
+		}
+
 		// Prepare request
-		req := service.Events.List("primary").
+		req := service.Events.List(calID).
 			ShowDeleted(false).
 			SingleEvents(true).
 			TimeMin(tMin.Format(time.RFC3339)).
@@ -102,8 +108,9 @@ func printEvent(event *cal.Event) {
 
 func init() {
 	listCmd.Flags().Bool("tomorrow", false, "show events for tomorrow")
-	listCmd.Flags().IntP("days", "d", 0, "number of days ahead to list events")
-	listCmd.Flags().IntP("max", "m", 0, "maximum number of events to show")
+	listCmd.Flags().Int("days", 0, "number of days ahead to list events")
+	listCmd.Flags().Int("max", 0, "maximum number of events to show")
+	listCmd.Flags().String("cal", "", "name of the calendar to list events from, defaults to primary")
 
 	rootCmd.AddCommand(listCmd)
 }

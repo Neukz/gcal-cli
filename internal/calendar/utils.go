@@ -8,9 +8,14 @@ import (
 
 // Finds the calendar ID by its human-readable name
 func ResolveCalendarID(service *calendar.Service, name string) (string, error) {
+	// Default calendar
+	if name == "" {
+		return "primary", nil
+	}
+
 	cals, err := service.CalendarList.List().Do()
 	if err != nil {
-		return "", fmt.Errorf("unable to list calendars: %w", err)
+		return "", fmt.Errorf("failed to retrieve calendar list: %w", err)
 	}
 
 	for _, cal := range cals.Items {

@@ -7,18 +7,6 @@ import (
 
 	"github.com/Neukz/gcal-cli/internal/calendar"
 	"github.com/spf13/cobra"
-	cal "google.golang.org/api/calendar/v3"
-)
-
-// Flags
-var (
-	title   string
-	start   string
-	end     string
-	desc    string
-	loc     string
-	tz      string
-	calName string
 )
 
 var addCmd = &cobra.Command{
@@ -27,7 +15,15 @@ var addCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		service := calendar.GetService()
 
-		// Required flags
+		// Flags
+		title, _ := cmd.Flags().GetString("title")
+		start, _ := cmd.Flags().GetString("start")
+		end, _ := cmd.Flags().GetString("end")
+		desc, _ := cmd.Flags().GetString("desc")
+		loc, _ := cmd.Flags().GetString("loc")
+		tz, _ := cmd.Flags().GetString("tz")
+		calName, _ := cmd.Flags().GetString("cal")
+
 		if title == "" || start == "" || end == "" {
 			log.Fatalf("Missing required flags: --title, --start, and --end.")
 		}
@@ -42,30 +38,12 @@ var addCmd = &cobra.Command{
 			log.Fatalf("Invalid --end: %v", err)
 		}
 
-		calID := "primary" // Default calendar
-		if calName != "" {
-			id, err := calendar.ResolveCalendarID(service, calName)
-			if err != nil {
-				log.Fatalf("Failed to resolve calendar ID: %v", err)
-			}
-
-			calID = id
+		calID, err := calendar.ResolveCalendarID(service, calName)
+		if err != nil {
+			log.Fatalf("Failed to resolve calendar ID: %v", err)
 		}
 
-		event := &cal.Event{
-			Summary:     title,
-			Description: desc,
-			Location:    loc,
-			Start: &cal.EventDateTime{
-				DateTime: startRFC,
-				TimeZone: tz,
-			},
-			End: &cal.EventDateTime{
-				DateTime: endRFC,
-				TimeZone: tz,
-			},
-		}
-
+		event := calendar.NewEvent(title, desc, loc, tz, startRFC, endRFC)
 		createdEvent, err := service.Events.Insert(calID, event).Do()
 		if err != nil {
 			log.Fatalf("Unable to create event: %v", err)
@@ -98,13 +76,13 @@ func toRFC3339(datetime, tz string) (string, error) {
 }
 
 func init() {
-	addCmd.Flags().StringVarP(&title, "title", "t", "", "event title (required)")
-	addCmd.Flags().StringVarP(&start, "start", "s", "", "start time, e.g. 2025-07-12 13:00 (required)")
-	addCmd.Flags().StringVarP(&end, "end", "e", "", "end time, e.g. 2025-07-12 14:00 (required)")
-	addCmd.Flags().StringVarP(&desc, "desc", "d", "", "event description")
-	addCmd.Flags().StringVarP(&loc, "loc", "l", "", "event location")
-	addCmd.Flags().StringVarP(&tz, "tz", "z", "", "time zone (IANA name, e.g. Europe/Warsaw), defaults to system time zone")
-	addCmd.Flags().StringVarP(&calName, "cal", "c", "", "name of the calendar to insert the event into, defaults to primary")
+	addCmd.Flags().StringP("title", "t", "", "event title (required)")
+	addCmd.Flags().StringP("start", "s", "", "start time, e.g. 2025-07-12 13:00 (required)")
+	addCmd.Flags().StringP("end", "e", "", "end time, e.g. 2025-07-12 14:00 (required)")
+	addCmd.Flags().StringP("desc", "d", "", "event description")
+	addCmd.Flags().StringP("loc", "l", "", "event location")
+	addCmd.Flags().StringP("tz", "z", "", "time zone (IANA name, e.g. Europe/Warsaw), defaults to system time zone")
+	addCmd.Flags().StringP("cal", "c", "", "name of the calendar to insert the event into, defaults to primary")
 
 	rootCmd.MarkFlagRequired("title")
 	rootCmd.MarkFlagRequired("start")

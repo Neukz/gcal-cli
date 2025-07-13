@@ -76,13 +76,13 @@ func toRFC3339(datetime, tz string) (string, error) {
 }
 
 func init() {
-	addCmd.Flags().StringP("title", "t", "", "event title (required)")
-	addCmd.Flags().StringP("start", "s", "", "start time, e.g. 2025-07-12 13:00 (required)")
-	addCmd.Flags().StringP("end", "e", "", "end time, e.g. 2025-07-12 14:00 (required)")
-	addCmd.Flags().StringP("desc", "d", "", "event description")
-	addCmd.Flags().StringP("loc", "l", "", "event location")
-	addCmd.Flags().StringP("tz", "z", "", "time zone (IANA name, e.g. Europe/Warsaw), defaults to system time zone")
-	addCmd.Flags().StringP("cal", "c", "", "name of the calendar to insert the event into, defaults to primary")
+	addCmd.Flags().String("title", "", "event title (required)")
+	addCmd.Flags().String("start", "", "start time, e.g. 2025-07-12 13:00 (required)")
+	addCmd.Flags().String("end", "", "end time, e.g. 2025-07-12 14:00 (required)")
+	addCmd.Flags().String("desc", "", "event description")
+	addCmd.Flags().String("loc", "", "event location")
+	addCmd.Flags().String("tz", "", "time zone (IANA name, e.g. Europe/Warsaw), defaults to system time zone")
+	addCmd.Flags().String("cal", "", "name of the calendar to insert the event into, defaults to primary")
 
 	rootCmd.MarkFlagRequired("title")
 	rootCmd.MarkFlagRequired("start")

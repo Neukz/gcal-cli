@@ -23,23 +23,19 @@ var listCmd = &cobra.Command{
 		calName, _ := cmd.Flags().GetString("cal")
 
 		tNow := time.Now()
-		var tMin, tMax time.Time
-		var heading string
+		tMin := time.Date(tNow.Year(), tNow.Month(), tNow.Day(), 0, 0, 0, 0, tNow.Location()) // Include the full day
+		var tMax time.Time
+		const day = 24 * time.Hour
 
 		// Handle mutally exclusive flags
 		switch {
 		case tomorrow:
-			tMin = time.Date(tNow.Year(), tNow.Month(), tNow.Day(), 0, 0, 0, 0, tNow.Location()).Add(24 * time.Hour)
-			tMax = tMin.Add(24 * time.Hour)
-			heading = "Events for tomorrow:"
+			tMin = tMin.Add(day)
+			tMax = tMin.Add(day)
 		case daysAhead > 0:
-			tMin = tNow
-			tMax = tNow.Add(time.Duration(daysAhead) * 24 * time.Hour)
-			heading = fmt.Sprintf("Events for the next %d day(s):", daysAhead)
+			tMax = tMin.Add(time.Duration(daysAhead+1) * day) // +1 to include the tMin day
 		default:
-			tMin = time.Date(tNow.Year(), tNow.Month(), tNow.Day(), 0, 0, 0, 0, tNow.Location())
-			tMax = tMin.Add(24 * time.Hour)
-			heading = "Events for today:"
+			tMax = tMin.Add(day)
 		}
 
 		calID, err := calendar.ResolveCalendarID(service, calName)
@@ -57,7 +53,6 @@ var listCmd = &cobra.Command{
 			return
 		}
 
-		fmt.Println(heading)
 		for _, event := range events {
 			printEvent(event)
 		}

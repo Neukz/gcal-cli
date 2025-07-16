@@ -17,6 +17,7 @@ var listCmd = &cobra.Command{
 		service := calendar.GetService()
 
 		// Flags
+		showAll, _ := cmd.Flags().GetBool("all")
 		tomorrow, _ := cmd.Flags().GetBool("tomorrow")
 		daysAhead, _ := cmd.Flags().GetInt("days")
 		maxResults, _ := cmd.Flags().GetInt("max")
@@ -54,7 +55,7 @@ var listCmd = &cobra.Command{
 		}
 
 		for _, event := range events {
-			printEvent(event)
+			printEvent(event, showAll)
 		}
 
 		if maxResults > 0 && len(events) == maxResults {
@@ -64,31 +65,44 @@ var listCmd = &cobra.Command{
 }
 
 // Prints formatted event date, time, and title
-func printEvent(event *cal.Event) {
-	var tReadable string
+func printEvent(event *cal.Event, showAll bool) {
+	var startStr string
 
 	if event.Start.DateTime != "" { // Time-specific event
 		t, err := time.Parse(time.RFC3339, event.Start.DateTime)
 		if err != nil {
-			tReadable = event.Start.DateTime // Fallback
+			startStr = event.Start.DateTime // Fallback
 		} else {
-			tReadable = t.Format("Mon, Jan 2 at 15:04")
+			startStr = t.Format("Mon, Jan 2 at 15:04")
 		}
 	} else if event.Start.Date != "" { // All-day event
 		t, err := time.Parse("2006-01-02", event.Start.Date)
 		if err != nil {
-			tReadable = event.Start.Date // Fallback
+			startStr = event.Start.Date // Fallback
 		} else {
-			tReadable = t.Format("Mon, Jan 2") + " (All day)"
+			startStr = t.Format("Mon, Jan 2") + " (All day)"
 		}
 	} else {
-		tReadable = "Unknown time"
+		startStr = "Unknown time"
 	}
 
-	fmt.Printf("> %s — %s\n", tReadable, event.Summary)
+	fmt.Printf("> %s — %s\n", startStr, event.Summary)
+
+	if showAll {
+		if event.Description != "" {
+			fmt.Printf("\tDescription: %s\n", event.Description)
+		}
+		if event.Location != "" {
+			fmt.Printf("\tLocation: %s\n", event.Location)
+		}
+		if event.HtmlLink != "" {
+			fmt.Printf("\tLink: %s\n", event.HtmlLink)
+		}
+	}
 }
 
 func init() {
+	listCmd.Flags().Bool("all", false, "display event details")
 	listCmd.Flags().Bool("tomorrow", false, "show events for tomorrow")
 	listCmd.Flags().Int("days", 0, "number of days ahead to list events")
 	listCmd.Flags().Int("max", 0, "maximum number of events to show")

@@ -89,6 +89,7 @@ func printEvent(event *cal.Event, showAll bool) {
 	fmt.Printf("> %s — %s\n", startStr, event.Summary)
 
 	if showAll {
+		fmt.Printf("\tID: %s\n", event.Id)
 		if event.Description != "" {
 			fmt.Printf("\tDescription: %s\n", event.Description)
 		}

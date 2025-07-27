@@ -84,9 +84,9 @@ func init() {
 	addCmd.Flags().String("tz", "", "time zone (IANA name, e.g. Europe/Warsaw), defaults to system time zone")
 	addCmd.Flags().String("cal", "", "name of the calendar to insert the event into, defaults to primary")
 
-	rootCmd.MarkFlagRequired("title")
-	rootCmd.MarkFlagRequired("start")
-	rootCmd.MarkFlagRequired("end")
+	addCmd.MarkFlagRequired("title")
+	addCmd.MarkFlagRequired("start")
+	addCmd.MarkFlagRequired("end")
 
 	rootCmd.AddCommand(addCmd)
 }

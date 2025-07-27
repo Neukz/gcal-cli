@@ -49,7 +49,7 @@ var addCmd = &cobra.Command{
 			log.Fatalf("Unable to create event: %v", err)
 		}
 
-		fmt.Printf("Event created: %s\n", createdEvent.HtmlLink)
+		fmt.Printf("Event created.\nID: %s\nLink: %s\n", createdEvent.Id, createdEvent.HtmlLink)
 	},
 }
 

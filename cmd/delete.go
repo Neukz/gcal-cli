@@ -16,12 +16,18 @@ var deleteCmd = &cobra.Command{
 
 		// Flags
 		eventID, _ := cmd.Flags().GetString("id")
+		calName, _ := cmd.Flags().GetString("cal")
 
 		if eventID == "" {
 			log.Fatalf("Missing required flags: --id.")
 		}
 
-		err := service.Events.Delete("primary", eventID).Do()
+		calID, err := calendar.ResolveCalendarID(service, calName)
+		if err != nil {
+			log.Fatalf("Failed to resolve calendar ID: %v", err)
+		}
+
+		err = service.Events.Delete(calID, eventID).Do()
 		if err != nil {
 			log.Fatalf("Unable to delete event: %v", err)
 		}
@@ -32,6 +38,7 @@ var deleteCmd = &cobra.Command{
 
 func init() {
 	deleteCmd.Flags().String("id", "", "event ID (required)")
+	deleteCmd.Flags().String("cal", "", "name of the calendar to delete the event from, defaults to primary")
 
 	deleteCmd.MarkFlagRequired("id")
 

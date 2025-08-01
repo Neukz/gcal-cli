@@ -6,6 +6,8 @@ import (
 
 	"github.com/Neukz/gcal-cli/internal/calendar"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
+	cal "google.golang.org/api/calendar/v3"
 )
 
 var editCmd = &cobra.Command{
@@ -16,7 +18,6 @@ var editCmd = &cobra.Command{
 
 		// Flags
 		eventID, _ := cmd.Flags().GetString("id")
-		title, _ := cmd.Flags().GetString("title")
 		calName, _ := cmd.Flags().GetString("cal")
 
 		if eventID == "" {
@@ -33,9 +34,7 @@ var editCmd = &cobra.Command{
 			log.Fatalf("Unable to retrieve event: %v", err)
 		}
 
-		if title != "" {
-			event.Summary = title
-		}
+		updateEventFromFlags(event, cmd.Flags())
 
 		updatedEvent, err := service.Events.Update(calID, eventID, event).Do()
 		if err != nil {
@@ -46,9 +45,29 @@ var editCmd = &cobra.Command{
 	},
 }
 
+// Updates event information based on flags
+func updateEventFromFlags(event *cal.Event, flags *pflag.FlagSet) {
+	title, _ := flags.GetString("title")
+	if title != "" {
+		event.Summary = title
+	}
+
+	desc, _ := flags.GetString("desc")
+	if desc != "" {
+		event.Description = desc
+	}
+
+	loc, _ := flags.GetString("loc")
+	if loc != "" {
+		event.Location = loc
+	}
+}
+
 func init() {
 	editCmd.Flags().String("id", "", "event ID (required)")
 	editCmd.Flags().String("title", "", "event title")
+	editCmd.Flags().String("desc", "", "event description")
+	editCmd.Flags().String("loc", "", "event location")
 	editCmd.Flags().String("cal", "", "name of the calendar to edit the event from, defaults to primary")
 
 	editCmd.MarkFlagRequired("id")

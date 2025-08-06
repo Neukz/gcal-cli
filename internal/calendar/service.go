@@ -25,7 +25,7 @@ func GetService() *calendar.Service {
 
 	token, err := LoadToken()
 	if err != nil {
-		log.Fatalf("No valid token found. Run `gcal auth` first.")
+		log.Fatalf("No valid token found. Run `gcal login` first.")
 	}
 
 	client := config.Client(context.Background(), token)

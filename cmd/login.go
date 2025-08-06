@@ -10,8 +10,8 @@ import (
 	"golang.org/x/oauth2/google"
 )
 
-var authCmd = &cobra.Command{
-	Use:   "auth",
+var loginCmd = &cobra.Command{
+	Use:   "login",
 	Short: "Authenticate with Google Calendar",
 	Run: func(cmd *cobra.Command, args []string) {
 		credentials, err := os.ReadFile(calendar.CredentialsFile)
@@ -34,5 +34,5 @@ var authCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(authCmd)
+	rootCmd.AddCommand(loginCmd)
 }

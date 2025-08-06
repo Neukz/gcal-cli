@@ -90,7 +90,51 @@ func StartAuthFlow(config *oauth2.Config) error {
 	return err
 }
 
-// Retrieves token from file
+// Retrieves the token and sends a POST to revocation endpoint to invalidate it
+func Logout() error {
+	token, err := LoadToken()
+	if err != nil {
+		return err
+	}
+
+	// Delete token file
+	if err := os.Remove(tokenFile); err != nil {
+		return err
+	}
+
+	const url = "https://accounts.google.com/o/oauth2/revoke?token="
+	const contentType = "application/x-www-form-urlencoded"
+
+	// Helper to revoke a single token
+	revokeToken := func(tok string) error {
+		res, err := http.Post(url+tok, contentType, nil)
+		if err != nil {
+			return err
+		}
+		defer res.Body.Close()
+
+		if res.StatusCode != http.StatusOK {
+			return fmt.Errorf("failed to revoke token, HTTP status: %s", res.Status)
+		}
+
+		return nil
+	}
+
+	// Try refresh token first
+	if err := revokeToken(token.RefreshToken); err == nil {
+		return nil
+	}
+
+	// If revoking refresh token failed, try access token
+	if err := revokeToken(token.AccessToken); err == nil {
+		return nil
+	}
+
+	// Both failed
+	return fmt.Errorf("failed to revoke both refresh and access tokens")
+}
+
+// Retrieves the token from file
 func readTokenFromFile(file string) (*oauth2.Token, error) {
 	f, err := os.Open(file)
 	if err != nil {

@@ -14,7 +14,10 @@ var editCmd = &cobra.Command{
 	Use:   "edit",
 	Short: "Edit an event",
 	Run: func(cmd *cobra.Command, args []string) {
-		service := calendar.GetService()
+		service, err := calendar.GetService()
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
 
 		// Flags
 		eventID, _ := cmd.Flags().GetString("id")

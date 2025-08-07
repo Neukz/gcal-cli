@@ -14,7 +14,10 @@ var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List Google Calendar events",
 	Run: func(cmd *cobra.Command, args []string) {
-		service := calendar.GetService()
+		service, err := calendar.GetService()
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
 
 		// Flags
 		showAll, _ := cmd.Flags().GetBool("all")

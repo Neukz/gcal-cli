@@ -2,7 +2,7 @@ package calendar
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"os"
 
 	"golang.org/x/oauth2/google"
@@ -12,28 +12,28 @@ import (
 
 const CredentialsFile = "credentials.json"
 
-func GetService() *calendar.Service {
-	b, err := os.ReadFile(CredentialsFile)
+func GetService() (*calendar.Service, error) {
+	credentials, err := os.ReadFile(CredentialsFile)
 	if err != nil {
-		log.Fatalf("Unable to read credentials file: %v", err)
+		return nil, fmt.Errorf("unable to read credentials file: %v", err)
 	}
 
-	config, err := google.ConfigFromJSON(b, calendar.CalendarScope)
+	config, err := google.ConfigFromJSON(credentials, calendar.CalendarScope)
 	if err != nil {
-		log.Fatalf("Unable to parse credentials: %v", err)
+		return nil, fmt.Errorf("unable to parse credentials: %v", err)
 	}
 
 	token, err := LoadToken()
 	if err != nil {
-		log.Fatalf("No valid token found. Run `gcal login` first.")
+		return nil, fmt.Errorf("unable to retrieve the token: %v", err)
 	}
 
 	client := config.Client(context.Background(), token)
 
 	service, err := calendar.NewService(context.Background(), option.WithHTTPClient(client))
 	if err != nil {
-		log.Fatalf("Unable to create calendar service: %v", err)
+		return nil, fmt.Errorf("unable to create calendar service: %v", err)
 	}
 
-	return service
+	return service, nil
 }

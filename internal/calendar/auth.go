@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -20,11 +19,11 @@ const (
 	redirectURL   = "http://localhost" + serverAddress
 )
 
-// Attempts to load the token and checks validity
+// Attempts to retrieve the token and checks validity
 func LoadToken() (*oauth2.Token, error) {
 	token, err := readTokenFromFile(tokenFile)
 	if err != nil {
-		return nil, errors.New("no token found")
+		return nil, errors.New("token not found")
 	}
 
 	if !token.Valid() {
@@ -55,10 +54,10 @@ func StartAuthFlow(config *oauth2.Config) error {
 	fmt.Println("Opening browser to:", authURL)
 	go openBrowser(authURL)
 
-	// Listen for redirect on successful authentication
 	codeCh := make(chan string)
 	server := &http.Server{Addr: serverAddress}
 
+	// Listen for redirect on successful authentication
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		code := r.URL.Query().Get("code")
 		if code == "" {
@@ -73,21 +72,29 @@ func StartAuthFlow(config *oauth2.Config) error {
 		go server.Shutdown(context.Background())
 	})
 
+	serverErrCh := make(chan error, 1)
 	go func() {
 		if err := server.ListenAndServe(); err != http.ErrServerClosed {
-			log.Fatalf("HTTP server error: %v", err)
+			serverErrCh <- err
 		}
 	}()
 
-	// Wait for code
-	code := <-codeCh
-	token, err := config.Exchange(context.Background(), code)
-	if err != nil {
-		return err
-	}
+	// Wait for code or server error
+	select {
+	case code := <-codeCh:
+		token, err := config.Exchange(context.Background(), code)
+		if err != nil {
+			return err
+		}
 
-	err = SaveToken(token)
-	return err
+		return SaveToken(token)
+	case err := <-serverErrCh:
+		if err != nil {
+			return fmt.Errorf("HTTP server error: %v", err)
+		}
+
+		return errors.New("server closed unexpectedly")
+	}
 }
 
 // Retrieves the token and sends a POST to revocation endpoint to invalidate it

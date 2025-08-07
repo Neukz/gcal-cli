@@ -18,20 +18,19 @@ var deleteCmd = &cobra.Command{
 		}
 
 		// Flags
-		eventID, _ := cmd.Flags().GetString("id")
+		eventId, _ := cmd.Flags().GetString("id")
 		calName, _ := cmd.Flags().GetString("cal")
 
-		if eventID == "" {
+		if eventId == "" {
 			log.Fatalf("Missing required flags: --id.")
 		}
 
-		calID, err := calendar.ResolveCalendarID(service, calName)
+		calId, err := calendar.ResolveCalendarId(service, calName)
 		if err != nil {
 			log.Fatalf("Failed to resolve calendar ID: %v", err)
 		}
 
-		err = service.Events.Delete(calID, eventID).Do()
-		if err != nil {
+		if err := service.Events.Delete(calId, eventId).Do(); err != nil {
 			log.Fatalf("Unable to delete event: %v", err)
 		}
 

@@ -37,17 +37,17 @@ var listCmd = &cobra.Command{
 			tMin = tMin.Add(day)
 			tMax = tMin.Add(day)
 		case daysAhead > 0:
-			tMax = tMin.Add(time.Duration(daysAhead+1) * day) // +1 to include the tMin day
+			tMax = tMin.Add(time.Duration(daysAhead+1) * day)
 		default:
 			tMax = tMin.Add(day)
 		}
 
-		calID, err := calendar.ResolveCalendarID(service, calName)
+		calId, err := calendar.ResolveCalendarId(service, calName)
 		if err != nil {
 			log.Fatalf("Failed to resolve calendar ID: %v", err)
 		}
 
-		events, err := calendar.GetEvents(service, calID, tMin, tMax, maxResults)
+		events, err := calendar.GetEvents(service, calId, tMin, tMax, maxResults)
 		if err != nil {
 			log.Fatalf("Unable to retrieve events: %v", err)
 		}

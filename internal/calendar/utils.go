@@ -7,7 +7,7 @@ import (
 )
 
 // Finds the calendar ID by its human-readable name
-func ResolveCalendarID(service *calendar.Service, name string) (string, error) {
+func ResolveCalendarId(service *calendar.Service, name string) (string, error) {
 	// Default calendar
 	if name == "" {
 		return "primary", nil

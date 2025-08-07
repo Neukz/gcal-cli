@@ -41,13 +41,13 @@ var addCmd = &cobra.Command{
 			log.Fatalf("Invalid --end: %v", err)
 		}
 
-		calID, err := calendar.ResolveCalendarID(service, calName)
+		calId, err := calendar.ResolveCalendarId(service, calName)
 		if err != nil {
 			log.Fatalf("Failed to resolve calendar ID: %v", err)
 		}
 
 		event := calendar.NewEvent(title, desc, loc, tz, startRFC, endRFC)
-		createdEvent, err := service.Events.Insert(calID, event).Do()
+		createdEvent, err := service.Events.Insert(calId, event).Do()
 		if err != nil {
 			log.Fatalf("Unable to create event: %v", err)
 		}
@@ -60,7 +60,7 @@ var addCmd = &cobra.Command{
 func toRFC3339(datetime, tz string) (string, error) {
 	const layout = "2006-01-02 15:04"
 
-	loc := time.Now().Location() // Default to system time zone
+	loc := time.Now().Location() // Defaults to system time zone
 	var err error
 
 	if tz != "" {

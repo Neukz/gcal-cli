@@ -10,15 +10,16 @@ import (
 	"google.golang.org/api/option"
 )
 
-const CredentialsFile = "credentials.json"
+const CredentialsFilename = "credentials.json"
 
+// Returns the calendar service after successful authentication
 func GetService() (*calendar.Service, error) {
-	credentials, err := os.ReadFile(CredentialsFile)
+	creds, err := os.ReadFile(CredentialsFilename)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read credentials file: %v", err)
 	}
 
-	config, err := google.ConfigFromJSON(credentials, calendar.CalendarScope)
+	config, err := google.ConfigFromJSON(creds, calendar.CalendarScope)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse credentials: %v", err)
 	}

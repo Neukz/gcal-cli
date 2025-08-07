@@ -9,16 +9,12 @@ import (
 // Base command
 var rootCmd = &cobra.Command{
 	Use:   "gcal",
-	Short: "A CLI for Google Calendar",
-	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Help()
-	},
+	Short: "CLI for Google Calendar",
 }
 
-// Adds child commands and flags
+// Runs the base command
 func Execute() {
-	err := rootCmd.Execute()
-	if err != nil {
+	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
 	}
 }

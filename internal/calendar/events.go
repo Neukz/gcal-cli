@@ -24,9 +24,9 @@ func NewEvent(title, desc, loc, tz, startRFC, endRFC string) *calendar.Event {
 }
 
 // Fetches events between tMin and tMax for the given calendar ID
-func GetEvents(service *calendar.Service, calID string, tMin, tMax time.Time, maxResults int) ([]*calendar.Event, error) {
+func GetEvents(service *calendar.Service, calId string, tMin, tMax time.Time, maxResults int) ([]*calendar.Event, error) {
 	// Prepare request
-	req := service.Events.List(calID).
+	req := service.Events.List(calId).
 		ShowDeleted(false).
 		SingleEvents(true).
 		TimeMin(tMin.Format(time.RFC3339)).

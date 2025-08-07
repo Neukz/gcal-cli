@@ -14,14 +14,14 @@ import (
 )
 
 const (
-	tokenFile     = "token.json"
+	tokenFilename = "token.json"
 	serverAddress = ":8080"
 	redirectURL   = "http://localhost" + serverAddress
 )
 
-// Attempts to retrieve the token and checks validity
+// Attempts to retrieve the token and checks its validity
 func LoadToken() (*oauth2.Token, error) {
-	token, err := readTokenFromFile(tokenFile)
+	token, err := readTokenFromFile(tokenFilename)
 	if err != nil {
 		return nil, errors.New("token not found")
 	}
@@ -35,7 +35,7 @@ func LoadToken() (*oauth2.Token, error) {
 
 // Saves the token to file
 func SaveToken(token *oauth2.Token) error {
-	f, err := os.OpenFile(tokenFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
+	f, err := os.OpenFile(tokenFilename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
 		return err
 	}
@@ -44,7 +44,7 @@ func SaveToken(token *oauth2.Token) error {
 	return json.NewEncoder(f).Encode(token)
 }
 
-// Returns requested token
+// Starts authentication flow and saves the token to file
 func StartAuthFlow(config *oauth2.Config) error {
 	config.RedirectURL = redirectURL
 
@@ -93,7 +93,7 @@ func StartAuthFlow(config *oauth2.Config) error {
 			return fmt.Errorf("HTTP server error: %v", err)
 		}
 
-		return errors.New("server closed unexpectedly")
+		return errors.New("HTTP server closed unexpectedly")
 	}
 }
 
@@ -105,7 +105,7 @@ func Logout() error {
 	}
 
 	// Delete token file
-	if err := os.Remove(tokenFile); err != nil {
+	if err := os.Remove(tokenFilename); err != nil {
 		return err
 	}
 
@@ -138,16 +138,15 @@ func Logout() error {
 	}
 
 	// Both failed
-	return fmt.Errorf("failed to revoke both refresh and access tokens")
+	return errors.New("failed to revoke both refresh and access tokens")
 }
 
 // Retrieves the token from file
-func readTokenFromFile(file string) (*oauth2.Token, error) {
-	f, err := os.Open(file)
+func readTokenFromFile(filename string) (*oauth2.Token, error) {
+	f, err := os.Open(filename)
 	if err != nil {
 		return nil, err
 	}
-
 	defer f.Close()
 
 	token := &oauth2.Token{}

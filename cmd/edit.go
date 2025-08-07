@@ -20,26 +20,26 @@ var editCmd = &cobra.Command{
 		}
 
 		// Flags
-		eventID, _ := cmd.Flags().GetString("id")
+		eventId, _ := cmd.Flags().GetString("id")
 		calName, _ := cmd.Flags().GetString("cal")
 
-		if eventID == "" {
+		if eventId == "" {
 			log.Fatalf("Missing required flags: --id.")
 		}
 
-		calID, err := calendar.ResolveCalendarID(service, calName)
+		calId, err := calendar.ResolveCalendarId(service, calName)
 		if err != nil {
 			log.Fatalf("Failed to resolve calendar ID: %v", err)
 		}
 
-		event, err := service.Events.Get(calID, eventID).Do()
+		event, err := service.Events.Get(calId, eventId).Do()
 		if err != nil {
 			log.Fatalf("Unable to retrieve event: %v", err)
 		}
 
 		updateEventFromFlags(event, cmd.Flags())
 
-		updatedEvent, err := service.Events.Update(calID, eventID, event).Do()
+		updatedEvent, err := service.Events.Update(calId, eventId, event).Do()
 		if err != nil {
 			log.Fatalf("Unable to edit event: %v", err)
 		}

@@ -9,7 +9,7 @@ import (
 
 var logoutCmd = &cobra.Command{
 	Use:   "logout",
-	Short: "Logout from Google Calendar",
+	Short: "Sign out of your Google account",
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := calendar.Logout(); err != nil {
 			fmt.Printf("Already logged out: %v", err)

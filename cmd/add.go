@@ -11,7 +11,7 @@ import (
 
 var addCmd = &cobra.Command{
 	Use:   "add",
-	Short: "Add an event to Google Calendar",
+	Short: "Create a new event",
 	Run: func(cmd *cobra.Command, args []string) {
 		service, err := calendar.GetService()
 		if err != nil {

@@ -12,7 +12,7 @@ import (
 
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List Google Calendar events",
+	Short: "List events",
 	Run: func(cmd *cobra.Command, args []string) {
 		service, err := calendar.GetService()
 		if err != nil {

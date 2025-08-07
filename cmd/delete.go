@@ -10,7 +10,7 @@ import (
 
 var deleteCmd = &cobra.Command{
 	Use:   "delete",
-	Short: "Delete an event from Google Calendar",
+	Short: "Delete an event",
 	Run: func(cmd *cobra.Command, args []string) {
 		service, err := calendar.GetService()
 		if err != nil {

@@ -12,7 +12,7 @@ import (
 
 var loginCmd = &cobra.Command{
 	Use:   "login",
-	Short: "Authenticate with Google Calendar",
+	Short: "Sign in with your Google account",
 	Run: func(cmd *cobra.Command, args []string) {
 		creds, err := os.ReadFile(calendar.CredentialsFilename)
 		if err != nil {

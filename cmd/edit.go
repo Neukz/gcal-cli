@@ -12,7 +12,7 @@ import (
 
 var editCmd = &cobra.Command{
 	Use:   "edit",
-	Short: "Edit an event",
+	Short: "Modify an event",
 	Run: func(cmd *cobra.Command, args []string) {
 		service, err := calendar.GetService()
 		if err != nil {
